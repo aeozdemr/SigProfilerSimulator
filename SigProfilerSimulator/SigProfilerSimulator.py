@@ -79,6 +79,7 @@ def context_identifier (mutation):
 def probability (chromosome=None, position=None, mutation=None, context=None, genome=None, mutation_count=1, mutation_file=None, exome=False):
 
 	chromosome_string_path, ref_dir = matRef.reference_paths(genome)
+	print(ref_dir)
 	if not mutation_file:
 		if not genome:
 			print("No genome provided")
@@ -98,6 +99,7 @@ def probability (chromosome=None, position=None, mutation=None, context=None, ge
 		context, nuc = context_identifier(mutation)
 		if exome:
 			context += "_exome"
+		
 		nucleotide_context_file = os.path.join(ref_dir, "references", "chromosomes", "context_distributions", f"context_counts_{genome}_{context}.csv")
 
 		count_mat = pd.read_csv(nucleotide_context_file, sep=',', header=0, index_col=[0])
@@ -143,7 +145,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 
 	# Sorts the user-provided contexts
 	contexts.sort(reverse=True)
-
+	
 
 	bed = False
 	if bed_file:
@@ -203,11 +205,12 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 		os.makedirs(os.path.join(project_path, "logs"))
 
 
+
 	if os.path.exists(error_file):
-		# os.system("rm " + error_file)
+		
 		os.remove(error_file)
 	if os.path.exists(log_file):
-		# os.system("rm " + log_file)
+		
 		os.remove(log_file)
 
 
@@ -322,13 +325,24 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 
 	# Esnures that the nucleotide context files are saved properly
 	nucleotide_context_files = {}
-	print(chromosome_string_path)
-	for context in contexts:
-			nucleotide_context_file = chromosome_string_path.split(os.path.sep)
-			ref_path = os.path.join(*nucleotide_context_file[:-3])
-			nucleotide_context_file = os.path.join(ref_path, 'context_distributions')
 	
-		
+	for context in contexts:
+			
+			
+			nucleotide_context_file = chromosome_string_path.split(os.path.sep)
+			
+			if os.name == "nt":
+				drive, _ = os.path.splitdrive(chromosome_string_path)
+				ref_path = os.path.normpath(os.path.join(drive+os.path.sep,*nucleotide_context_file[:-3]))
+			
+			else:
+				ref_path = os.path.normpath(os.path.join(*nucleotide_context_file[:-3]))
+			
+			print(ref_path)
+			nucleotide_context_file = os.path.join(ref_path,'context_distributions'+os.path.sep)
+			
+			
+
 		# genome_original = genome
 		# if 'havana' in genome:
 		# 	genome = genome.split("_")[0]
@@ -352,12 +366,18 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 				nucleotide_context_file = nucleotide_context_file.split("_")
 				nucleotide_context_file[4] = "6144"
 				nucleotide_context_file = "_".join([x for x in nucleotide_context_file])			
+			
 			nucleotide_context_files[context] = nucleotide_context_file
-			if os.path.exists(nucleotide_context_file) == True and bed and not region:
-				os.remove(nucleotide_context_file)
+			
+			if os.path.exists(nucleotide_context_file) and bed and not region:
+    				os.remove(nucleotide_context_file)
 
+
+			
 			if os.path.exists(nucleotide_context_file) == False and (context != 'INDEL' and context != 'ID' and context != 'ID415'):
 				print("     The context distribution file does not exist. This file needs to be created before simulating. This may take several hours...")
+				
+				print(nucleotide_context_files[context])
 				if bed:
 					output_file = os.path.join(ref_path, 'context_distributions', f'context_distribution_{genome}_{context}_{gender}_BED.csv')
 
