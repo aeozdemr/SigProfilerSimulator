@@ -325,7 +325,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	print(chromosome_string_path)
 	for context in contexts:
 			nucleotide_context_file = chromosome_string_path.split(os.path.sep)
-			ref_path = os.path.join(*nucleotide_context_file[:-2])
+			ref_path = os.path.join(*nucleotide_context_file[:-3])
 			nucleotide_context_file = os.path.join(ref_path, 'context_distributions')
 	
 		
