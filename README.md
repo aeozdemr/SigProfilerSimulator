@@ -35,7 +35,7 @@ This section will guide you through the minimum steps required to begin simulati
 ```
 $ python3
 >> from SigProfilerSimulator import SigProfilerSimulator as sigSim
->> sigSim.SigProfilerSimulator("BRCA", "/Users/ebergstr/Desktop/BRCA/", "GRCh37", contexts=["96"], exome=None, simulations=100, updating=False, bed_file=None, overlap=False, gender='female',  chrom_based=False, seed_file=None, noisePoisson=False, noiseAWGN=0, cushion=100, region=None, vcf=False)
+>> if __name__ == "__main__" : sigSim.SigProfilerSimulator("BRCA", "/Users/ebergstr/Desktop/BRCA/", "GRCh37", contexts=["96"], exome=None, simulations=100, updating=False, bed_file=None, overlap=False, gender='female',  chrom_based=False, seed_file=None, noisePoisson=False, noiseAWGN=0, cushion=100, region=None, vcf=False)
 ```
   The layout of the required parameters are as follows:
   
@@ -99,7 +99,7 @@ For all errors, please email the error and progress log files to the primary con
 
 **CITATION**
 
-Erik N. Bergstrom, Mark Barnes, Iñigo Martincorena, Ludmil B. Alexandrov
+Erik N. Bergstrom, Mark Barnes, IÃ±igo Martincorena, Ludmil B. Alexandrov
 bioRxiv 2020.02.13.948422; doi: https://doi.org/10.1101/2020.02.13.948422
 https://www.biorxiv.org/content/10.1101/2020.02.13.948422v1
 
