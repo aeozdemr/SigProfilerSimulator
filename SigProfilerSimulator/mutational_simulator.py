@@ -113,15 +113,19 @@ def combine_simulation_files (iterations, output_path, chromosomes, samples=[], 
 	'''
 
 	if vcf:
-		for sample in samples:
-			for i in iterations:
-				with open(output_path + sample + "/" + sample + "_" + str(i) + ".vcf", "w") as f:
-					print("\t".join(["#Chrom","Pos","Sample", "Ref","Alt",".","Simulations","Genome","matGenClass","Strand"]), file=f)
-				with open(output_path + sample + "/" + sample + "_" + str(i) + ".vcf", "ab") as f:
-					for chrom in chromosomes:
-						with open(output_path + sample + "/" + sample + "_" + str(i) + "_" + chrom + ".vcf", "rb") as fd:
-							shutil.copyfileobj(fd, f)
-						os.remove(output_path + sample + "/" + sample + "_" + str(i) + "_" + chrom + ".vcf")
+			for sample in samples:
+				for i in iterations:
+					
+					with open(os.path.join(output_path, sample, f"{sample}_{i}.vcf"), "w") as f:
+						print("\t".join(["#Chrom", "Pos", "Sample", "Ref", "Alt", ".", "Simulations", "Genome", "matGenClass", "Strand"]), file=f)
+			   		
+					with open(os.path.join(output_path, sample, f"{sample}_{i}.vcf"), "ab") as f:
+						for chrom in chromosomes:
+							with open(os.path.join(output_path, sample, f"{sample}_{i}_{chrom}.vcf"), "rb") as fd:
+								shutil.copyfileobj(fd, f)
+								os.remove(os.path.join(output_path, sample, f"{sample}_{i}_{chrom}.vcf"))
+	
+
 
 	else:		
 		extension = ''
@@ -829,7 +833,8 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 		fastrand.pcg32_seed(seed)
 		
 	if seqInfo:
-		seqOut_path = project_path + "output/vcf_files/simulations/"
+		seqOut_path = os.path.join(project_path, "output", "vcf_files", "simulations")
+
 
 
 	ranges = {}
@@ -852,7 +857,8 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 		chrom_bias_lengths = {'TU':[],'B':[],'N':[]}
 		if '192' in contexts or '3072' in contexts or '384' in contexts or '6144' in contexts or 'DBS186' in contexts or '24' in contexts or 'ID415' in contexts or '288' in contexts or '4608' in contexts:
 			chromosome_string_path, ref_dir = matRef.reference_paths(genome)
-			with open (ref_dir + '/references/chromosomes/tsb_BED/' + genome + '/' + chrom + "_BED_TSB.txt") as f:
+			with open(os.path.join(ref_dir, 'references', 'chromosomes', 'tsb_BED', genome, f"{chrom}_BED_TSB.txt")) as f:
+
 				next(f)
 				for lines in f:
 					line = lines.strip().split()
@@ -896,7 +902,8 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 			simulations = simulation_number
 			sample_path = output_path
 			if vcf:
-				sample_path = sample_path + sample + "/"
+				sample_path = os.path.join(sample_path, sample, "")
+
 
 			while(simulations > 0):
 				
@@ -923,7 +930,8 @@ def simulator (sample_names, mutation_tracker, chromosome_string_path, tsb_ref, 
 				with open(outputFile, "a", 10000000) as out_vcf:
 					for context in contexts:
 						if seqInfo:
-							outSeq = open(seqOut_path + context + "/" + sample + "_" + chrom + "_seqinfo_" + str(simulations) + ".txt", "w", 10000000) 
+							outSeq = open(os.path.join(seqOut_path, context, f"{sample}_{chrom}_seqinfo_{simulations}.txt"), "w", 10000000)
+ 
 
 						sim = None
 						mut_start = None
