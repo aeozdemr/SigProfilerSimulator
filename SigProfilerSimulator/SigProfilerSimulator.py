@@ -331,15 +331,20 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 			
 			nucleotide_context_file = chromosome_string_path.split(os.path.sep)
 			
+			
+			
 			if os.name == "nt":
 				drive, _ = os.path.splitdrive(chromosome_string_path)
-				ref_path = os.path.normpath(os.path.join(drive+os.path.sep,*nucleotide_context_file[:-3]))
+				ref_path = os.path.normpath(os.path.join(drive+os.path.sep,*nucleotide_context_file[:-2]))
 			
 			else:
-				ref_path = os.path.normpath(os.path.join(*nucleotide_context_file[:-3]))
+				
+				
+				ref_path = os.path.abspath(os.path.normpath(os.path.join('/', *nucleotide_context_file[:-3])))
+
 			
-			print(ref_path)
-			nucleotide_context_file = os.path.join(ref_path+os.path.sep+'chromosomes','context_distributions'+os.path.sep)
+			
+			nucleotide_context_file = os.path.join(ref_path,'context_distributions'+os.path.sep)
 			
 			
 
@@ -541,9 +546,3 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	print("Simulation completed\nJob took " , run_time, " seconds")
 	log_out.close()
 	sys.stderr.close()
-
-	
-
-
-
-
