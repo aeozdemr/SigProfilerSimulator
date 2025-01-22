@@ -79,7 +79,6 @@ def context_identifier (mutation):
 def probability (chromosome=None, position=None, mutation=None, context=None, genome=None, mutation_count=1, mutation_file=None, exome=False):
 
 	chromosome_string_path, ref_dir = matRef.reference_paths(genome)
-	print(ref_dir)
 	if not mutation_file:
 		if not genome:
 			print("No genome provided")
@@ -99,9 +98,7 @@ def probability (chromosome=None, position=None, mutation=None, context=None, ge
 		context, nuc = context_identifier(mutation)
 		if exome:
 			context += "_exome"
-		
-		nucleotide_context_file = os.path.join(ref_dir, "references", "chromosomes", "context_distributions", f"context_counts_{genome}_{context}.csv")
-
+		nucleotide_context_file = ref_dir + "/references/chromosomes/context_distributions/" + "context_counts_" + genome + "_" + context + ".csv"
 		count_mat = pd.read_csv(nucleotide_context_file, sep=',', header=0, index_col=[0])
 
 		nucleotide_count = count_mat.loc[nuc, chromosome]
@@ -140,12 +137,12 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	start_run = time.time()
 
 	# Ensures proper string for the project's path
-	if not project_path.endswith(os.path.sep):
-			project_path += os.path.sep
+	if project_path[-1] != "/":
+		project_path += "/"
 
 	# Sorts the user-provided contexts
 	contexts.sort(reverse=True)
-	
+
 
 	bed = False
 	if bed_file:
@@ -197,20 +194,17 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 		chromosomes = [region]
 	############################## Log and Error Files ##################################################################################################
 	time_stamp = datetime.date.today()
-	error_file = os.path.join(project_path, 'logs', f'SigProfilerSimulator_{project}_{genome}_{time_stamp}.err')
-	log_file = os.path.join(project_path, 'logs', f'SigProfilerSimulator_{project}_{genome}_{time_stamp}.out')
+	error_file = project_path + 'logs/SigProfilerSimulator_' + project + "_" + genome + "_" + str(time_stamp) + ".err"
+	log_file = project_path + 'logs/SigProfilerSimulator_' + project + "_" + genome + "_" + str(time_stamp) + ".out"
 
-
-	if not os.path.exists(os.path.join(project_path, "logs")):
-		os.makedirs(os.path.join(project_path, "logs"))
-
-
+	if not os.path.exists(project_path + "logs/"):
+		os.makedirs(project_path + "logs/")
 
 	if os.path.exists(error_file):
-		
+		# os.system("rm " + error_file)
 		os.remove(error_file)
 	if os.path.exists(log_file):
-		
+		# os.system("rm " + log_file)
 		os.remove(log_file)
 
 
@@ -253,28 +247,24 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	# Ensures that the mutational matrices exist:
 	catalogue_files = {}	
 	for context in contexts:
-		matrix_path = os.path.join(project_path, "output")
-
+		matrix_path = project_path + "output/"
 		if context == 'DINUC' or 'DBS' in context:
 			context_folder = 'DBS'
-			matrix_path = os.path.join(matrix_path, context_folder, "")
-
+			matrix_path = matrix_path + context_folder + "/"
 			if context == 'DBS' or context == 'DINUC' or context == '78':
 				file_name = ".DBS78"
 			else:
 				file_name = '.' + context 
 		elif context == 'INDEL' or 'ID' in context or '415' in context:
 			context_folder = 'ID'
-			matrix_path = os.path.join(matrix_path, context_folder, "")
-
+			matrix_path = matrix_path + context_folder + "/"
 			if context == 'INDEL' or context == 'ID' or context == '83':
 				file_name = '.ID83'
 			else:
 				file_name = "." + context
 		else:
 			context_folder = 'SBS'
-			matrix_path = os.path.join(matrix_path, context_folder, "")
-
+			matrix_path = matrix_path + context_folder + "/"
 			file_name = '.SBS' + context
 
 		if exome:
@@ -289,10 +279,9 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 		catalogue_files[context] = catalogue_file
 
 		vcf_files_1 = project_path
-		vcf_files_2 = os.path.join(project_path, "input")
+		vcf_files_2 = project_path + "input/"
 		parent_dir = os.getcwd()
-		matrix_dir = "scripts"
-
+		matrix_dir = "scripts/"
 		if chrom_based:
 			if os.path.exists (catalogue_file + '.chr1') == False:
 				if os.path.exists (vcf_files_2) == False and len(os.listdir(vcf_files_1)) == 0:
@@ -320,98 +309,75 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 					# print("The matrix file has been created. Continuing with simulations...")
 
 	if exome:
-		exome_file = os.path.join(ref_dir, "references", "chromosomes", "exome", genome, f"{genome}_exome.interval_list")
-
+		exome_file = ref_dir + "/references/chromosomes/exome/" + genome + "/" + genome + "_exome.interval_list"
 
 	# Esnures that the nucleotide context files are saved properly
 	nucleotide_context_files = {}
-	
 	for context in contexts:
-			
-			
-			nucleotide_context_file = chromosome_string_path.split(os.path.sep)
-			
-			
-			
-			if os.name == "nt":
-				drive, _ = os.path.splitdrive(chromosome_string_path)
-				ref_path = os.path.normpath(os.path.join(drive+os.path.sep,*nucleotide_context_file[:-2]))
-			
-			else:
-				
-				
-				ref_path = os.path.abspath(os.path.normpath(os.path.join('/', *nucleotide_context_file[:-3])))
+		nucleotide_context_file = chromosome_string_path.split(os.path.sep)
+		ref_path = nucleotide_context_file[:-3]
+		
+		ref_path = os.path.sep.join([x for x in ref_path])
+		
+		
+		
 
-			
-			
-			nucleotide_context_file = os.path.join(ref_path,'context_distributions'+os.path.sep)
-			
-			
-
+		if os.name == 'nt':
+			nucleotide_context_file = ref_path +'\\chromosomes'+ '\\context_distributions\\'
+		else:
+			nucleotide_context_file = ref_path + '/context_distributions/'
 		# genome_original = genome
 		# if 'havana' in genome:
 		# 	genome = genome.split("_")[0]
-
-			if bed_file:
-					if region:
-						nucleotide_context_file += "context_distribution_" + genome + "_" + context + "_" + gender + ".csv"
-					else:
-						nucleotide_context_file += "context_distribution_" + genome + "_" + context + "_" + gender + "_BED.csv"
+		print(nucleotide_context_file)
+		if bed_file:
+			if region:
+				nucleotide_context_file += "context_distribution_" + genome + "_" + context + "_" + gender + ".csv"
 			else:
-					if exome:
-						nucleotide_context_file += "context_distribution_" + genome + "_" + context + "_" + gender + "_exome.csv"
-					else:
-						nucleotide_context_file += "context_distribution_" + genome + "_" + context + "_" + gender + ".csv"
+				nucleotide_context_file += "context_distribution_" + genome + "_" + context + "_" + gender + "_BED.csv"
+		else:
+			if exome:
+				nucleotide_context_file += "context_distribution_" + genome + "_" + context + "_" + gender + "_exome.csv"
+			else:
+				nucleotide_context_file += "context_distribution_" + genome + "_" + context + "_" + gender + ".csv"
 
-			if context == "288":
-				nucleotide_context_file = nucleotide_context_file.split("_")
-				nucleotide_context_file[5] = "384"
-				nucleotide_context_file = "_".join([x for x in nucleotide_context_file])
-			elif context == '4608':
-				nucleotide_context_file = nucleotide_context_file.split("_")
-				nucleotide_context_file[4] = "6144"
-				nucleotide_context_file = "_".join([x for x in nucleotide_context_file])			
-			
-			nucleotide_context_files[context] = nucleotide_context_file
-			
-			if os.path.exists(nucleotide_context_file) and bed and not region:
-    				os.remove(nucleotide_context_file)
+		if context == "288":
+			nucleotide_context_file = nucleotide_context_file.split("_")
+			nucleotide_context_file[5] = "384"
+			nucleotide_context_file = "_".join([x for x in nucleotide_context_file])
+		elif context == '4608':
+			nucleotide_context_file = nucleotide_context_file.split("_")
+			nucleotide_context_file[4] = "6144"
+			nucleotide_context_file = "_".join([x for x in nucleotide_context_file])			
+		nucleotide_context_files[context] = nucleotide_context_file
+		if os.path.exists(nucleotide_context_file) == True and bed and not region:
+			os.remove(nucleotide_context_file)
 
-
-			
-			if os.path.exists(nucleotide_context_file) == False and (context != 'INDEL' and context != 'ID' and context != 'ID415'):
-				print("     The context distribution file does not exist. This file needs to be created before simulating. This may take several hours...")
-				
-				print(nucleotide_context_files[context])
-				if bed:
-					output_file = os.path.join(ref_path, 'context_distributions', f'context_distribution_{genome}_{context}_{gender}_BED.csv')
-
-					context_dist.context_distribution_BED(context, output_file, chromosome_string_path, chromosomes, bed, bed_file, exome, exome_file, genome, ref_path, tsb_ref, gender)
-				elif exome:
-					output_file = os.path.join(ref_path, 'context_distributions', f'context_distribution_{genome}_{context}_{gender}_BED.csv')
-
-					context_dist.context_distribution_BED(context, output_file, chromosome_string_path, chromosomes, bed, bed_file, exome, exome_file, genome, ref_dir, tsb_ref, gender)
-				else:
-					output_file = os.path.join(ref_path, 'context_distributions', f'context_distribution_{genome}_{context}_{gender}_BED.csv')
-
-					context_dist.context_distribution(context, output_file, chromosome_string_path, chromosomes, tsb_ref, genome)
-				print("     The context distribution file has been created!")
-				if gender == 'female' or gender.upper() == 'FEMALE':
-					if "Y" in chromosomes:
-						chromosomes.remove('Y')
+		if os.path.exists(nucleotide_context_file) == False and (context != 'INDEL' and context != 'ID' and context != 'ID415'):
+			print("     The context distribution file does not exist. This file needs to be created before simulating. This may take several hours...")
+			if bed:
+				output_file = ref_path + '/context_distributions/context_distribution_' + genome + "_" + context + "_" + gender + '_BED.csv'
+				context_dist.context_distribution_BED(context, output_file, chromosome_string_path, chromosomes, bed, bed_file, exome, exome_file, genome, ref_path, tsb_ref, gender)
+			elif exome:
+				output_file = ref_path + '/context_distributions/context_distribution_' + genome + "_" + context + "_" + gender + '_exome.csv'
+				context_dist.context_distribution_BED(context, output_file, chromosome_string_path, chromosomes, bed, bed_file, exome, exome_file, genome, ref_dir, tsb_ref, gender)
+			else:
+				output_file = ref_path + '/context_distributions/context_distribution_' + genome + "_" + context + "_" + gender + '.csv'
+				context_dist.context_distribution(context, output_file, chromosome_string_path, chromosomes, tsb_ref, genome)
+			print("     The context distribution file has been created!")
+			if gender == 'female' or gender.upper() == 'FEMALE':
+				if "Y" in chromosomes:
+					chromosomes.remove('Y')
 
 
 	############################## Set-up output files ##################################################################################################
 	context_string = "_".join(contexts)
 	if bed_file:
-		output_path = os.path.join(project_path, "output", "simulations", f"{project}_simulations_{genome}_{context_string}_BED")
-
+		output_path = project_path + "output/simulations/" + project + '_simulations_' + genome + '_' + context_string + '_BED/'
 	elif exome:
-		output_path = os.path.join(project_path, "output", "simulations", f"{project}_simulations_{genome}_{context_string}_exome")
-
+		output_path = project_path + "output/simulations/" + project + '_simulations_' + genome + '_' + context_string + '_exome/'
 	else:
-		output_path = os.path.join(project_path, "output", "simulations", f"{project}_simulations_{genome}_{context_string}")
-
+		output_path = project_path + "output/simulations/" + project + '_simulations_' + genome + '_' + context_string + '/'
 
 
 	if os.path.exists(output_path):
@@ -440,13 +406,10 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 
 	if vcf:
 		if "" in sample_names:
-		   sample_names.remove("")
-			   
+			sample_names.remove("")
 		for sample in sample_names:
-			sample_dir = os.path.join(output_path, sample)
-			if not os.path.exists(sample_dir):
-				os.makedirs(sample_dir)
-
+			if not os.path.exists(output_path + sample + "/"):
+				os.makedirs(output_path + sample + "/")
 
 
 	# Set-up parallelization:
@@ -480,8 +443,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	seeds = []
 	if seed_file == None:
 		ref_dir, tail = os.path.split(os.path.dirname(os.path.abspath(__file__)))
-		seed_file = os.path.join(ref_dir, "SigProfilerSimulator", "seeds.txt")
-
+		seed_file = ref_dir + "/SigProfilerSimulator/seeds.txt"
 	with open(seed_file) as f:
 		for i in range (0, max_seed, 1):
 			new_seed = int(int(f.readline().strip()) / time.time())
@@ -493,21 +455,21 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 
 	if exome:
 		bed = True
-		bed_file = os.path.join(ref_dir, "SigProfilerMatrixGenerator", "references", "chromosomes", "exome", genome, f"{genome}_exome.interval_list")
+		bed_file = ref_dir + "/SigProfilerMatrixGenerator/references/chromosomes/exome/" + genome + "/" + genome + "_exome.interval_list"
 
 	if seqInfo:
-		seqOut_path = os.path.join(project_path, "output", "vcf_files", "simulations")
+		seqOut_path = project_path + "output/vcf_files/simulations/"
 		if not os.path.exists(seqOut_path):
-			   os.makedirs(seqOut_path)
+			os.makedirs(seqOut_path)
 
 		for context in contexts:
-			context_path = os.path.join(seqOut_path, context)
-			if not os.path.exists(context_path):
-						os.makedirs(context_path)
+			if not os.path.exists(seqOut_path + context + "/"):
+				os.makedirs(seqOut_path + context + "/")
 			else:
-				print(context_path)
-				shutil.rmtree(context_path)
-				os.makedirs(context_path)
+				print(seqOut_path+ context + "/")
+				shutil.rmtree(seqOut_path+ context + "/")
+				os.makedirs(seqOut_path+ context + "/")
+
 	pool = mp.Pool(max_seed)
 	results = []
 	for i in range (0, len(chromosomes_parallel), 1):
@@ -546,3 +508,9 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 	print("Simulation completed\nJob took " , run_time, " seconds")
 	log_out.close()
 	sys.stderr.close()
+
+	
+
+
+
+
