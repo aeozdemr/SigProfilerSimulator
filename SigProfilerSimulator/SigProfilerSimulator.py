@@ -339,7 +339,7 @@ def SigProfilerSimulator (project, project_path, genome, contexts, exome=None, s
 				ref_path = os.path.normpath(os.path.join(*nucleotide_context_file[:-3]))
 			
 			print(ref_path)
-			nucleotide_context_file = os.path.join(ref_path,'context_distributions'+os.path.sep)
+			nucleotide_context_file = os.path.join(ref_path+os.path.sep+'chromosomes','context_distributions'+os.path.sep)
 			
 			
 
